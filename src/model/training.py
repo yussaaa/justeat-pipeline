@@ -6,6 +6,12 @@ from utils import load_config
 
 config = load_config()
 
+from kfp import dsl
+from kfp.dsl import Artifact, Input, Model, Output, Dataset
+
+import pickle
+import logging
+
 # Data split configs
 TEST_SIZE = config["data_split"]["test_size"]
 RANDOM_STATE = config["data_split"]["random_state"]
@@ -93,7 +99,25 @@ def model_cross_validation(
     return grid_search.best_estimator_
 
 
-def trainging_pipeline_run(X_train, y_train):
+def training_pipeline_run(X_train, y_train) -> RandomForestRegressor:
     model = model_init_and_fit(X_train, y_train)
     best_model = model_cross_validation(model, X_train, y_train)
     return best_model
+
+
+@dsl.component
+def pipeline_run_step(
+    df: Dataset, model_output_path: str, best_model: Model = None
+) -> Output[Model]:
+    from training import data_split, model_init_and_fit, model_cross_validation
+
+    X_train, _, y_train, _ = data_split(df)
+    model = model_init_and_fit(X_train, y_train)
+    logging.info(f"Model initialized and fitted")
+    best_model = model_cross_validation(model, X_train, y_train)
+    logging.info(f"Model cross-validated with best score: {best_model.best_score_}")
+
+    # Write Pickle for convenience: This is what we trained and will have sklearn interface
+    pickle_output_path = model_output_path + "_sklearn.pkl"
+    with open(pickle_output_path, "wb") as f:
+        pickle.dump(best_model, f)

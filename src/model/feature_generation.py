@@ -5,6 +5,9 @@ import pandas as pd
 import h3
 from sklearn.preprocessing import LabelEncoder
 
+import kfp.dsl as dsl
+from kfp.dsl import Input, Output, Artifact, Dataset
+
 
 def calc_dist(p1x, p1y, p2x, p2y):
     p1 = (p2x - p1x) ** 2
@@ -107,7 +110,10 @@ def centroid_assignation(df, centroids):
         # Estimate error
         all_errors = [
             eucl_dist(
-                centroid["lat"], centroid["lon"], obs["courier_lat"], obs["courier_lon"]
+                centroid["lat"],
+                centroid["lon"],
+                obs["courier_lat"],
+                obs["courier_lon"],
             )
             for centroid in centroids_list
         ]
@@ -185,10 +191,17 @@ def Encoder(df):
     return df
 
 
-def generate_features(df, restaurants_ids):
+@dsl.component
+def generate_features(
+    df: Input[Dataset], restaurants_ids: Input[dict], final_dataset: Output[Dataset]
+) -> Output[Dataset]:
+
     df = feature_distance_creation(df, restaurants_ids)
     df = assign_centroids_to_df(df, restaurants_ids)
     df = h3_features(df)
     df["h3_index"] = df.h3_index.astype("category")
     df = Encoder(df)
+
+    df.to_csv(final_dataset, index=False)
+
     return df
