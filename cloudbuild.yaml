@@ -1,0 +1,9 @@
+steps:
+# Build the container image
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', 'gcr.io/citric-program-331111/justeat-pipeline', '.']
+# Push the container image to Container Registry
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['push', 'gcr.io/citric-program-331111/justeat-pipeline']
+images:
+- gcr.io/citric-program-331111/justeat-pipeline
