@@ -3,3 +3,6 @@ numpy
 h3
 scikit-learn
 pyyaml
+joblib
+google-cloud
+google-cloud-storage
