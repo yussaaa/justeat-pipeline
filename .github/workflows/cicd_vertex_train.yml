@@ -70,3 +70,16 @@ jobs:
             --region=${{env.REGION}} \
             --display-name=${{env.JOB_NAME}} \
             --config=vertex_run.yaml
+
+      - name: Save model to Certex model registry
+        # run: |
+        #   gcloud ai models upload \
+        #     --region=${{env.REGION}} \
+        #     --display-name=justeat-regressor \
+        #     --container-image-uri=gcr.io/${{env.PROJECT_ID}}/justeat-pipeline
+        #     --artifact-uri=gs://cloud-ai-platform-4de6a256-deb4-4f4f-8b9f-8595e0183ea1/models/
+        run: |
+          python src/gcp/vertex_model_upload.py
+
+      - name: Deploy model to endpoint
+        run: python src/gcp/vertex_model_deploy.py
