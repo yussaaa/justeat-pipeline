@@ -51,8 +51,6 @@ jobs:
         with:
           credentials_json: "${{ secrets.GCP_VERTEX_AI_JUSTEAT }}"
 
-      - name: "Set up Cloud SDK"
-        uses: "google-github-actions/setup-gcloud@v2"
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
         with:
